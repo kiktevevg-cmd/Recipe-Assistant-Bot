@@ -1,11 +1,12 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env["OPENAI_API_KEY"];
+const apiKey = process.env["GEMINI_API_KEY"];
 if (!apiKey) {
-  throw new Error("OPENAI_API_KEY environment variable is required.");
+  throw new Error("GEMINI_API_KEY environment variable is required.");
 }
 
-export const openai = new OpenAI({ apiKey });
+const genAI = new GoogleGenerativeAI(apiKey);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export type Message = {
   role: "system" | "user" | "assistant";
@@ -13,12 +14,28 @@ export type Message = {
 };
 
 export async function chat(messages: Message[]): Promise<string> {
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages,
-    max_tokens: 1500,
-    temperature: 0.7,
+  // Extract system prompt (first message with role "system")
+  const systemMsg = messages.find((m) => m.role === "system");
+  const systemInstruction = systemMsg?.content ?? "";
+
+  // Convert remaining messages to Gemini format
+  const history = messages
+    .filter((m) => m.role !== "system")
+    .slice(0, -1) // all except the last (current user message)
+    .map((m) => ({
+      role: m.role === "user" ? "user" : "model",
+      parts: [{ text: m.content }],
+    }));
+
+  const lastUserMessage = messages.filter((m) => m.role !== "system").at(-1);
+  if (!lastUserMessage) return "Не удалось получить ответ.";
+
+  const geminiModel = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    systemInstruction,
   });
 
-  return completion.choices[0]?.message?.content ?? "Не удалось получить ответ.";
+  const chatSession = geminiModel.startChat({ history });
+  const result = await chatSession.sendMessage(lastUserMessage.content);
+  return result.response.text();
 }

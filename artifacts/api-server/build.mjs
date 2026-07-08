@@ -31,6 +31,7 @@ async function buildAll() {
       "*.node",
       "grammy",
       "openai",
+      "@google/generative-ai",
       "sharp",
       "better-sqlite3",
       "sqlite3",
