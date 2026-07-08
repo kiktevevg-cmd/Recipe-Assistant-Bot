@@ -1,39 +1,28 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const apiKey = process.env["GEMINI_API_KEY"];
+const apiKey = process.env["GROQ_API_KEY"];
 if (!apiKey) {
-  throw new Error("GEMINI_API_KEY environment variable is required.");
+  throw new Error("GROQ_API_KEY environment variable is required.");
 }
 
-const genAI = new GoogleGenerativeAI(apiKey);
+// Groq is OpenAI-compatible — use the openai package with Groq's base URL
+const groq = new OpenAI({
+  apiKey,
+  baseURL: "https://api.groq.com/openai/v1",
+});
+
 export type Message = {
   role: "system" | "user" | "assistant";
   content: string;
 };
 
 export async function chat(messages: Message[]): Promise<string> {
-  // Extract system prompt (first message with role "system")
-  const systemMsg = messages.find((m) => m.role === "system");
-  const systemInstruction = systemMsg?.content ?? "";
-
-  // Convert remaining messages to Gemini format
-  const history = messages
-    .filter((m) => m.role !== "system")
-    .slice(0, -1) // all except the last (current user message)
-    .map((m) => ({
-      role: m.role === "user" ? "user" : "model",
-      parts: [{ text: m.content }],
-    }));
-
-  const lastUserMessage = messages.filter((m) => m.role !== "system").at(-1);
-  if (!lastUserMessage) return "Не удалось получить ответ.";
-
-  const geminiModel = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    systemInstruction,
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages,
+    max_tokens: 1500,
+    temperature: 0.7,
   });
 
-  const chatSession = geminiModel.startChat({ history });
-  const result = await chatSession.sendMessage(lastUserMessage.content);
-  return result.response.text();
+  return completion.choices[0]?.message?.content ?? "Не удалось получить ответ.";
 }
