@@ -6,8 +6,6 @@ if (!apiKey) {
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
 export type Message = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -31,7 +29,7 @@ export async function chat(messages: Message[]): Promise<string> {
   if (!lastUserMessage) return "Не удалось получить ответ.";
 
   const geminiModel = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     systemInstruction,
   });
 
