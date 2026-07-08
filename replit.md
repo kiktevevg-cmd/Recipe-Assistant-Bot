@@ -1,45 +1,47 @@
-# [Project name]
+# Помощник по рецептам
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Telegram-бот, который помогает с рецептами и заменой ингредиентов, используя AI (OpenAI GPT-4o-mini).
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev` — запустить сервер + Telegram-бота
+- `pnpm run typecheck` — проверка типов по всему проекту
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Telegram: grammY
+- AI: OpenAI GPT-4o-mini
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/src/bot/` — весь код Telegram-бота
+  - `bot.ts` — регистрация команд, запуск polling
+  - `handlers.ts` — обработчики команд и сообщений
+  - `context.ts` — хранилище истории разговоров (в памяти, с TTL и LRU)
+  - `openai.ts` — клиент OpenAI
+
+## Required secrets
+
+- `TELEGRAM_BOT_TOKEN` — токен бота от @BotFather
+- `OPENAI_API_KEY` — ключ OpenAI API
+
+## Bot commands
+
+- `/start` — приветствие и справка
+- `/recipe <блюдо>` — получить рецепт
+- `/substitute <ингредиент>` — чем заменить ингредиент
+- `/clear` — очистить историю разговора
+- Естественный язык — бот понимает «рецепт борща», «чем заменить яйца» и т.д.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- История разговора хранится в памяти (Map), ограничена: 10 пар сообщений на чат, TTL 24ч, max 5000 чатов.
+- Бот работает в режиме long polling (не webhook), что проще для Replit-окружения.
+- grammY выбран как современный TypeScript-first фреймворк для Telegram.
+- grammy и openai вынесены в external в esbuild (нативные зависимости не бандлятся).
 
 ## User preferences
 
 _Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
