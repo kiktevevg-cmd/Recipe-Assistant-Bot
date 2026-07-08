@@ -1,6 +1,13 @@
 import type { Context } from "grammy";
 import { chat, buildMessages, addToHistory, clearHistory } from "./index.js";
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")  // **bold** → bold
+    .replace(/\*(.+?)\*/g, "$1")       // *italic* → italic
+    .replace(/`(.+?)`/g, "$1");        // `code` → code
+}
+
 async function sendTyping(ctx: Context): Promise<void> {
   await ctx.api.sendChatAction(ctx.chat!.id, "typing");
 }
@@ -36,7 +43,7 @@ export async function handleRecipe(ctx: Context): Promise<void> {
     const response = await chat(messages);
     addToHistory(chatId, "user", userMessage);
     addToHistory(chatId, "assistant", response);
-    await ctx.reply(response);
+    await ctx.reply(stripMarkdown(response));
   } catch (err) {
     await ctx.reply("❌ Ошибка при получении рецепта. Попробуй позже.");
     throw err;
@@ -61,7 +68,7 @@ export async function handleSubstitute(ctx: Context): Promise<void> {
     const response = await chat(messages);
     addToHistory(chatId, "user", userMessage);
     addToHistory(chatId, "assistant", response);
-    await ctx.reply(response);
+    await ctx.reply(stripMarkdown(response));
   } catch (err) {
     await ctx.reply("❌ Ошибка. Попробуй позже.");
     throw err;
@@ -109,7 +116,7 @@ export async function handleMessage(ctx: Context): Promise<void> {
     const response = await chat(messages);
     addToHistory(chatId, "user", text);
     addToHistory(chatId, "assistant", response);
-    await ctx.reply(response);
+    await ctx.reply(stripMarkdown(response));
   } catch (err) {
     await ctx.reply("❌ Что-то пошло не так. Попробуй ещё раз!");
     throw err;
