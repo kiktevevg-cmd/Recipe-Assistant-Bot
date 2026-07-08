@@ -7,7 +7,7 @@ export const chatLogTable = pgTable("chat_log", {
   firstName:    text("first_name"),
   userMessage:  text("user_message").notNull(),
   botResponse:  text("bot_response").notNull(),
-  createdAt:    timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt:    timestamp("created_at", { withTimezone: false }).notNull(),
 });
 
 export type ChatLog = typeof chatLogTable.$inferSelect;

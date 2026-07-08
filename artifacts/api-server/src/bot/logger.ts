@@ -8,12 +8,16 @@ export async function logChat(params: {
   botResponse: string;
 }): Promise<void> {
   try {
+    // Московское время UTC+3
+    const moscowTime = new Date(Date.now() + 3 * 60 * 60 * 1000);
+
     await db.insert(chatLogTable).values({
       chatId:      BigInt(params.chatId),
       username:    params.username ?? null,
       firstName:   params.firstName ?? null,
       userMessage: params.userMessage,
       botResponse: params.botResponse,
+      createdAt:   moscowTime,
     });
   } catch (err) {
     // Логирование не должно ронять бота — только пишем в консоль
