@@ -1,0 +1,1 @@
+- [sweb.ru deployment](sweb-deploy.md) — sweb builder can't handle pnpm monorepo catalogs; deploy from flat `standalone/` folder with prebuilt bundle, re-copy dist after every bot change.
