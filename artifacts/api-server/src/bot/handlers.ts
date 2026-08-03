@@ -1,45 +1,63 @@
 import type { Context } from "grammy";
-import { InlineKeyboard } from "grammy";
+import { InlineKeyboard, Keyboard } from "grammy";
 import { chat, buildMessages, addToHistory, clearHistory } from "./index.js";
 import { logChat } from "./logger.js";
 import { saveFavorite, getFavorites, getFavoriteById, deleteFavoriteById } from "./favorites.js";
 
+// ── Вспомогательные функции ────────────────────────────────────────────────
+
 function stripMarkdown(text: string): string {
   return text
-    .replace(/\*\*(.+?)\*\*/g, "$1")  // **bold** → bold
-    .replace(/\*(.+?)\*/g, "$1")       // *italic* → italic
-    .replace(/`(.+?)`/g, "$1");        // `code` → code
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/`(.+?)`/g, "$1");
 }
 
-// Извлекаем заголовок из текста рецепта — первая непустая строка без эмодзи
 function extractTitle(text: string): string {
   const firstLine = text.split("\n").map((l) => l.trim()).find((l) => l.length > 0) ?? "Рецепт";
-  // Убираем эмодзи и спецсимволы в начале строки
   return firstLine.replace(/^[\p{Emoji}\s🍽️•\-–:]+/u, "").trim() || firstLine;
-}
-
-// Хранит последний рецепт для каждого чата (для кнопки "Сохранить")
-const lastRecipeMap = new Map<number, { title: string; recipe: string }>();
-
-function saveButton(): InlineKeyboard {
-  return new InlineKeyboard().text("💾 Сохранить в избранное", "save_recipe");
 }
 
 async function sendTyping(ctx: Context): Promise<void> {
   await ctx.api.sendChatAction(ctx.chat!.id, "typing");
 }
 
+// ── Клавиатура меню ────────────────────────────────────────────────────────
+
+export const BUTTON = {
+  RECIPE:     "🍽️ Рецепт",
+  SUBSTITUTE: "🔄 Замена ингредиента",
+  FAVORITES:  "⭐ Избранное",
+  CLEAR:      "🗑️ Очистить историю",
+} as const;
+
+export const mainKeyboard = new Keyboard()
+  .text(BUTTON.RECIPE).text(BUTTON.SUBSTITUTE).row()
+  .text(BUTTON.FAVORITES).text(BUTTON.CLEAR)
+  .resized()
+  .persistent();
+
+function saveButton(): InlineKeyboard {
+  return new InlineKeyboard().text("💾 Сохранить в избранное", "save_recipe");
+}
+
+// ── Состояние ожидания ввода ───────────────────────────────────────────────
+
+type WaitState = "recipe" | "substitute";
+const waitMap = new Map<number, WaitState>();
+
+// ── Последний рецепт (для кнопки сохранения) ──────────────────────────────
+
+const lastRecipeMap = new Map<number, { title: string; recipe: string }>();
+
+// ── Handlers ───────────────────────────────────────────────────────────────
+
 export async function handleStart(ctx: Context): Promise<void> {
   const name = ctx.from?.first_name ?? "друг";
   await ctx.reply(
     `👨‍🍳 Привет, ${name}! Я твой помощник по рецептам.\n\n` +
-    `Вот что я умею:\n` +
-    `🍽️ /recipe <блюдо> — получить рецепт\n` +
-    `🔄 /substitute <ингредиент> — чем заменить ингредиент\n` +
-    `⭐ /favorites — избранные рецепты\n` +
-    `🗑️ /clear — очистить историю разговора\n\n` +
-    `Или просто напиши мне: «рецепт борща», «чем заменить яйца», «что приготовить из курицы и риса» — я всё пойму! 😊`,
-    { parse_mode: "Markdown" }
+    `Используй кнопки меню или напиши мне напрямую — я всё пойму! 😊`,
+    { reply_markup: mainKeyboard }
   );
 }
 
@@ -53,8 +71,88 @@ export async function handleRecipe(ctx: Context): Promise<void> {
   }
 
   await sendTyping(ctx);
+  await processRecipe(ctx, chatId, args);
+}
 
-  const userMessage = `Дай мне рецепт: ${args}`;
+export async function handleSubstitute(ctx: Context): Promise<void> {
+  const chatId = ctx.chat!.id;
+  const args = ctx.message?.text?.replace(/^\/substitute\s*/i, "").trim();
+
+  if (!args) {
+    await ctx.reply("🔄 Укажи ингредиент после команды.\nПример: `/substitute яйца`", { parse_mode: "Markdown" });
+    return;
+  }
+
+  await sendTyping(ctx);
+  await processSubstitute(ctx, chatId, args);
+}
+
+export async function handleClear(ctx: Context): Promise<void> {
+  const chatId = ctx.chat!.id;
+  clearHistory(chatId);
+  waitMap.delete(chatId);
+  await ctx.reply("🗑️ История разговора очищена. Начинаем с чистого листа!", { reply_markup: mainKeyboard });
+}
+
+export async function handleMessage(ctx: Context): Promise<void> {
+  const chatId = ctx.chat!.id;
+  const text = ctx.message?.text;
+  if (!text) return;
+
+  // ── Нажатия кнопок меню ──
+  if (text === BUTTON.RECIPE) {
+    waitMap.set(chatId, "recipe");
+    await ctx.reply("🍽️ Какое блюдо приготовить?", { reply_markup: mainKeyboard });
+    return;
+  }
+  if (text === BUTTON.SUBSTITUTE) {
+    waitMap.set(chatId, "substitute");
+    await ctx.reply("🔄 Что нужно заменить?", { reply_markup: mainKeyboard });
+    return;
+  }
+  if (text === BUTTON.FAVORITES) {
+    await showFavorites(ctx, chatId);
+    return;
+  }
+  if (text === BUTTON.CLEAR) {
+    clearHistory(chatId);
+    waitMap.delete(chatId);
+    await ctx.reply("🗑️ История разговора очищена. Начинаем с чистого листа!", { reply_markup: mainKeyboard });
+    return;
+  }
+
+  // ── Ожидаем ввод после нажатия кнопки ──
+  const waitState = waitMap.get(chatId);
+  if (waitState === "recipe") {
+    waitMap.delete(chatId);
+    await sendTyping(ctx);
+    await processRecipe(ctx, chatId, text);
+    return;
+  }
+  if (waitState === "substitute") {
+    waitMap.delete(chatId);
+    await sendTyping(ctx);
+    await processSubstitute(ctx, chatId, text);
+    return;
+  }
+
+  // ── Свободный ввод — определяем намерение ──
+  await sendTyping(ctx);
+  const intent = detectIntent(text);
+
+  if (intent === "recipe") {
+    await processRecipe(ctx, chatId, text);
+  } else if (intent === "substitute") {
+    await processSubstitute(ctx, chatId, text);
+  } else {
+    await processGeneral(ctx, chatId, text);
+  }
+}
+
+// ── Логика обработки запросов ──────────────────────────────────────────────
+
+async function processRecipe(ctx: Context, chatId: number, query: string): Promise<void> {
+  const userMessage = `Дай мне рецепт: ${query}`;
   const messages = buildMessages(chatId, userMessage);
 
   try {
@@ -70,23 +168,13 @@ export async function handleRecipe(ctx: Context): Promise<void> {
       logChat({ chatId, username: ctx.from?.username, firstName: ctx.from?.first_name, userMessage, botResponse: response }),
     ]);
   } catch (err) {
-    await ctx.reply("❌ Ошибка при получении рецепта. Попробуй позже.");
+    await ctx.reply("❌ Ошибка при получении рецепта. Попробуй позже.", { reply_markup: mainKeyboard });
     throw err;
   }
 }
 
-export async function handleSubstitute(ctx: Context): Promise<void> {
-  const chatId = ctx.chat!.id;
-  const args = ctx.message?.text?.replace(/^\/substitute\s*/i, "").trim();
-
-  if (!args) {
-    await ctx.reply("🔄 Укажи ингредиент после команды.\nПример: `/substitute яйца`", { parse_mode: "Markdown" });
-    return;
-  }
-
-  await sendTyping(ctx);
-
-  const userMessage = `Чем можно заменить: ${args}`;
+async function processSubstitute(ctx: Context, chatId: number, query: string): Promise<void> {
+  const userMessage = `Чем можно заменить: ${query}`;
   const messages = buildMessages(chatId, userMessage);
 
   try {
@@ -96,51 +184,17 @@ export async function handleSubstitute(ctx: Context): Promise<void> {
 
     const cleaned = stripMarkdown(response);
     await Promise.all([
-      ctx.reply(cleaned),
+      ctx.reply(cleaned, { reply_markup: mainKeyboard }),
       logChat({ chatId, username: ctx.from?.username, firstName: ctx.from?.first_name, userMessage, botResponse: response }),
     ]);
   } catch (err) {
-    await ctx.reply("❌ Ошибка. Попробуй позже.");
+    await ctx.reply("❌ Ошибка. Попробуй позже.", { reply_markup: mainKeyboard });
     throw err;
   }
 }
 
-export async function handleClear(ctx: Context): Promise<void> {
-  clearHistory(ctx.chat!.id);
-  await ctx.reply("🗑️ История разговора очищена. Начинаем с чистого листа!");
-}
-
-// Определяем тип запроса по ключевым словам
-function detectIntent(text: string): "recipe" | "substitute" | "general" {
-  const lower = text.toLowerCase();
-
-  const substituteKeywords = ["заменить", "замена", "вместо", "альтернатива", "чем заменить", "substitute"];
-  if (substituteKeywords.some((k) => lower.includes(k))) return "substitute";
-
-  const recipeKeywords = ["рецепт", "приготовить", "готовить", "сделать", "испечь", "сварить", "пожарить", "recipe", "как делать"];
-  if (recipeKeywords.some((k) => lower.includes(k))) return "recipe";
-
-  return "general";
-}
-
-export async function handleMessage(ctx: Context): Promise<void> {
-  const chatId = ctx.chat!.id;
-  const text = ctx.message?.text;
-
-  if (!text) return;
-
-  await sendTyping(ctx);
-
-  const intent = detectIntent(text);
-  let userMessage = text;
-
-  if (intent === "recipe") {
-    userMessage = `Дай рецепт для: ${text}`;
-  } else if (intent === "substitute") {
-    userMessage = `Помоги с заменой ингредиента: ${text}`;
-  }
-
-  const messages = buildMessages(chatId, userMessage);
+async function processGeneral(ctx: Context, chatId: number, text: string): Promise<void> {
+  const messages = buildMessages(chatId, text);
 
   try {
     const response = await chat(messages);
@@ -148,36 +202,36 @@ export async function handleMessage(ctx: Context): Promise<void> {
     addToHistory(chatId, "assistant", response);
 
     const cleaned = stripMarkdown(response);
-
-    // Показываем кнопку сохранения только для рецептов
-    if (intent === "recipe") {
-      lastRecipeMap.set(chatId, { title: extractTitle(cleaned), recipe: cleaned });
-      await Promise.all([
-        ctx.reply(cleaned, { reply_markup: saveButton() }),
-        logChat({ chatId, username: ctx.from?.username, firstName: ctx.from?.first_name, userMessage: text, botResponse: response }),
-      ]);
-    } else {
-      await Promise.all([
-        ctx.reply(cleaned),
-        logChat({ chatId, username: ctx.from?.username, firstName: ctx.from?.first_name, userMessage: text, botResponse: response }),
-      ]);
-    }
+    await Promise.all([
+      ctx.reply(cleaned, { reply_markup: mainKeyboard }),
+      logChat({ chatId, username: ctx.from?.username, firstName: ctx.from?.first_name, userMessage: text, botResponse: response }),
+    ]);
   } catch (err) {
-    await ctx.reply("❌ Что-то пошло не так. Попробуй ещё раз!");
+    await ctx.reply("❌ Что-то пошло не так. Попробуй ещё раз!", { reply_markup: mainKeyboard });
     throw err;
   }
 }
 
+function detectIntent(text: string): "recipe" | "substitute" | "general" {
+  const lower = text.toLowerCase();
+  const substituteKeywords = ["заменить", "замена", "вместо", "альтернатива", "чем заменить", "substitute"];
+  if (substituteKeywords.some((k) => lower.includes(k))) return "substitute";
+  const recipeKeywords = ["рецепт", "приготовить", "готовить", "сделать", "испечь", "сварить", "пожарить", "recipe", "как делать"];
+  if (recipeKeywords.some((k) => lower.includes(k))) return "recipe";
+  return "general";
+}
+
 // ── Избранное ──────────────────────────────────────────────────────────────
 
-export async function handleFavorites(ctx: Context): Promise<void> {
-  const chatId = ctx.chat!.id;
-
+async function showFavorites(ctx: Context, chatId: number): Promise<void> {
   try {
     const items = await getFavorites(chatId);
 
     if (items.length === 0) {
-      await ctx.reply("⭐ У тебя пока нет сохранённых рецептов.\n\nПолучи рецепт и нажми «💾 Сохранить в избранное».");
+      await ctx.reply(
+        "⭐ У тебя пока нет сохранённых рецептов.\n\nПолучи рецепт и нажми «💾 Сохранить в избранное».",
+        { reply_markup: mainKeyboard }
+      );
       return;
     }
 
@@ -188,9 +242,13 @@ export async function handleFavorites(ctx: Context): Promise<void> {
 
     await ctx.reply("⭐ Твои избранные рецепты:", { reply_markup: keyboard });
   } catch (err) {
-    await ctx.reply("❌ Не удалось загрузить избранное. Попробуй позже.");
+    await ctx.reply("❌ Не удалось загрузить избранное. Попробуй позже.", { reply_markup: mainKeyboard });
     throw err;
   }
+}
+
+export async function handleFavorites(ctx: Context): Promise<void> {
+  await showFavorites(ctx, ctx.chat!.id);
 }
 
 export async function handleSaveCallback(ctx: Context): Promise<void> {
@@ -243,7 +301,7 @@ export async function handleDeleteFavoriteCallback(ctx: Context): Promise<void> 
 
   try {
     await deleteFavoriteById(BigInt(idStr));
-    await ctx.reply("🗑️ Рецепт удалён из избранного.");
+    await ctx.reply("🗑️ Рецепт удалён из избранного.", { reply_markup: mainKeyboard });
   } catch (err) {
     await ctx.reply("❌ Не удалось удалить. Попробуй позже.");
     throw err;
