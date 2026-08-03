@@ -6,6 +6,10 @@ import {
   handleSubstitute,
   handleClear,
   handleMessage,
+  handleFavorites,
+  handleSaveCallback,
+  handleViewFavoriteCallback,
+  handleDeleteFavoriteCallback,
 } from "./handlers.js";
 
 const token = process.env["TELEGRAM_BOT_TOKEN"];
@@ -20,6 +24,12 @@ bot.command("start", handleStart);
 bot.command("recipe", handleRecipe);
 bot.command("substitute", handleSubstitute);
 bot.command("clear", handleClear);
+bot.command("favorites", handleFavorites);
+
+// Callback queries
+bot.callbackQuery("save_recipe", handleSaveCallback);
+bot.callbackQuery(/^view_fav:/, handleViewFavoriteCallback);
+bot.callbackQuery(/^del_fav:/, handleDeleteFavoriteCallback);
 
 // Natural language messages
 bot.on("message:text", handleMessage);
@@ -41,10 +51,11 @@ bot.catch((err) => {
 export async function startBot(): Promise<void> {
   // Set bot commands menu
   await bot.api.setMyCommands([
-    { command: "start", description: "Начать / справка" },
-    { command: "recipe", description: "Получить рецепт блюда" },
+    { command: "start",     description: "Начать / справка" },
+    { command: "recipe",    description: "Получить рецепт блюда" },
     { command: "substitute", description: "Чем заменить ингредиент" },
-    { command: "clear", description: "Очистить историю разговора" },
+    { command: "favorites", description: "Избранные рецепты" },
+    { command: "clear",     description: "Очистить историю разговора" },
   ]);
 
   // Start polling — return a promise that rejects on startup failure

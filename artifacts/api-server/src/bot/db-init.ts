@@ -12,4 +12,14 @@ export async function initDatabase(): Promise<void> {
       created_at   TIMESTAMP NOT NULL
     )
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS favorites (
+      id         BIGSERIAL PRIMARY KEY,
+      chat_id    BIGINT NOT NULL,
+      title      TEXT NOT NULL,
+      recipe     TEXT NOT NULL,
+      created_at TIMESTAMP NOT NULL
+    )
+  `);
 }
