@@ -1,3 +1,5 @@
+import { db, chatLogTable } from "@workspace/db";
+import { desc, eq } from "drizzle-orm";
 import type { Message } from "./openai.js";
 
 const SYSTEM_PROMPT = `Ты — дружелюбный кулинарный помощник, который говорит на русском языке.
@@ -82,11 +84,48 @@ export function addToHistory(chatId: number, role: "user" | "assistant", content
   }
 }
 
-export function clearHistory(chatId: number): void {
+export async function clearHistory(chatId: number): Promise<void> {
   conversations.delete(chatId);
+  try {
+    await db.delete(chatLogTable).where(eq(chatLogTable.chatId, BigInt(chatId)));
+  } catch (err) {
+    console.error("[context] Failed to clear persisted history:", (err as Error).message);
+  }
 }
 
-export function buildMessages(chatId: number, userMessage: string): Message[] {
+/**
+ * Загружает историю из chat_log в память, если чата ещё нет в Map
+ * (например, после перезапуска сервера).
+ */
+async function hydrateFromDb(chatId: number): Promise<void> {
+  if (conversations.has(chatId)) return;
+
+  try {
+    const rows = await db
+      .select({ userMessage: chatLogTable.userMessage, botResponse: chatLogTable.botResponse })
+      .from(chatLogTable)
+      .where(eq(chatLogTable.chatId, BigInt(chatId)))
+      .orderBy(desc(chatLogTable.id))
+      .limit(MAX_HISTORY_MESSAGES);
+
+    if (rows.length === 0) return;
+
+    const messages: Message[] = [];
+    for (const row of rows.reverse()) {
+      messages.push({ role: "user", content: row.userMessage });
+      messages.push({ role: "assistant", content: row.botResponse });
+    }
+
+    ensureCapacity();
+    conversations.set(chatId, { messages, lastActiveAt: Date.now() });
+  } catch (err) {
+    // Ошибка чтения истории не должна ронять бота — просто работаем без контекста
+    console.error("[context] Failed to load history from DB:", (err as Error).message);
+  }
+}
+
+export async function buildMessages(chatId: number, userMessage: string): Promise<Message[]> {
+  await hydrateFromDb(chatId);
   const entry = conversations.get(chatId);
   const history = entry?.messages ?? [];
   return [

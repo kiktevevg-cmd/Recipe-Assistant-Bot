@@ -89,7 +89,7 @@ export async function handleSubstitute(ctx: Context): Promise<void> {
 
 export async function handleClear(ctx: Context): Promise<void> {
   const chatId = ctx.chat!.id;
-  clearHistory(chatId);
+  await clearHistory(chatId);
   waitMap.delete(chatId);
   await ctx.reply("🗑️ История разговора очищена. Начинаем с чистого листа!", { reply_markup: mainKeyboard });
 }
@@ -115,7 +115,7 @@ export async function handleMessage(ctx: Context): Promise<void> {
     return;
   }
   if (text === BUTTON.CLEAR) {
-    clearHistory(chatId);
+    await clearHistory(chatId);
     waitMap.delete(chatId);
     await ctx.reply("🗑️ История разговора очищена. Начинаем с чистого листа!", { reply_markup: mainKeyboard });
     return;
@@ -153,7 +153,7 @@ export async function handleMessage(ctx: Context): Promise<void> {
 
 async function processRecipe(ctx: Context, chatId: number, query: string): Promise<void> {
   const userMessage = `Дай мне рецепт: ${query}`;
-  const messages = buildMessages(chatId, userMessage);
+  const messages = await buildMessages(chatId, userMessage);
 
   try {
     const response = await chat(messages);
@@ -175,7 +175,7 @@ async function processRecipe(ctx: Context, chatId: number, query: string): Promi
 
 async function processSubstitute(ctx: Context, chatId: number, query: string): Promise<void> {
   const userMessage = `Чем можно заменить: ${query}`;
-  const messages = buildMessages(chatId, userMessage);
+  const messages = await buildMessages(chatId, userMessage);
 
   try {
     const response = await chat(messages);
@@ -194,7 +194,7 @@ async function processSubstitute(ctx: Context, chatId: number, query: string): P
 }
 
 async function processGeneral(ctx: Context, chatId: number, text: string): Promise<void> {
-  const messages = buildMessages(chatId, text);
+  const messages = await buildMessages(chatId, text);
 
   try {
     const response = await chat(messages);
