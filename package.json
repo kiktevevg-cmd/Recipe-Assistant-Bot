@@ -1,0 +1,17 @@
+{
+  "name": "recipe-assistant-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "echo 'prebuilt bundle, nothing to build'",
+    "start": "node --enable-source-maps dist/index.mjs"
+  },
+  "dependencies": {
+    "grammy": "^1.44.0",
+    "openai": "^6.45.0"
+  }
+}
