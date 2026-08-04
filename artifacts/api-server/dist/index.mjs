@@ -45264,7 +45264,9 @@ app_default.listen(port, (err) => {
   }
   logger.info({ port }, "Server listening");
 });
-initDatabase().then(() => startBot()).catch((err) => {
+initDatabase().catch((err) => {
+  logger.error({ err }, "Database init failed \u2014 continuing without persistent storage");
+}).then(() => startBot()).catch((err) => {
   logger.error({ err }, "Failed to start Telegram bot");
   process.exit(1);
 });

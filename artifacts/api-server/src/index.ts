@@ -29,6 +29,10 @@ app.listen(port, (err) => {
 
 // Initialize database and start Telegram bot
 initDatabase()
+  .catch((err) => {
+    // Недоступная база не должна убивать бота — работаем без неё
+    logger.error({ err }, "Database init failed — continuing without persistent storage");
+  })
   .then(() => startBot())
   .catch((err) => {
     logger.error({ err }, "Failed to start Telegram bot");
