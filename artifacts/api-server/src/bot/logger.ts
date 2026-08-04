@@ -1,4 +1,4 @@
-import { db, chatLogTable } from "@workspace/db";
+import { db, chatLogTable, isDbAvailable } from "@workspace/db";
 
 export async function logChat(params: {
   chatId: number | bigint;
@@ -7,6 +7,7 @@ export async function logChat(params: {
   userMessage: string;
   botResponse: string;
 }): Promise<void> {
+  if (!isDbAvailable) return;
   try {
     // Московское время UTC+3
     const moscowTime = new Date(Date.now() + 3 * 60 * 60 * 1000);

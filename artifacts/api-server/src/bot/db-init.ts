@@ -1,6 +1,12 @@
-import { pool } from "@workspace/db";
+import { pool, isDbAvailable } from "@workspace/db";
 
 export async function initDatabase(): Promise<void> {
+  if (!isDbAvailable) {
+    console.warn(
+      "[db-init] DATABASE_URL не задан — бот работает без базы: история только в памяти, избранное недоступно",
+    );
+    return;
+  }
   await pool.query(`
     CREATE TABLE IF NOT EXISTS chat_log (
       id           BIGSERIAL PRIMARY KEY,

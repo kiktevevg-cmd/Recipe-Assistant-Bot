@@ -1,0 +1,48 @@
+[2026-08-04 10:09:32] 
+[2026-08-04 10:09:32] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:09:32] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:09:32] 
+[2026-08-04 10:09:32] {"level":30,"time":1785827372443,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:09:32] {"level":50,"time":1785827372446,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:09:43] 
+[2026-08-04 10:09:43] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:09:43] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:09:43] 
+[2026-08-04 10:09:44] {"level":30,"time":1785827384214,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:09:44] {"level":50,"time":1785827384220,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:10:05] 
+[2026-08-04 10:10:05] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:10:05] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:10:05] 
+[2026-08-04 10:10:06] {"level":30,"time":1785827406201,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:10:06] {"level":50,"time":1785827406207,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:10:50] 
+[2026-08-04 10:10:50] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:10:50] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:10:50] 
+[2026-08-04 10:10:51] {"level":30,"time":1785827451195,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:10:51] {"level":50,"time":1785827451201,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:12:21] 
+[2026-08-04 10:12:21] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:12:21] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:12:21] 
+[2026-08-04 10:12:22] {"level":30,"time":1785827542180,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:12:22] {"level":50,"time":1785827542194,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:15:15] 
+[2026-08-04 10:15:15] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:15:15] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:15:15] 
+[2026-08-04 10:15:16] {"level":30,"time":1785827716205,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:15:16] {"level":50,"time":1785827716211,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:20:25] 
+[2026-08-04 10:20:25] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:20:25] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:20:25] 
+[2026-08-04 10:20:26] {"level":30,"time":1785828026211,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:20:26] {"level":50,"time":1785828026219,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}
+[2026-08-04 10:25:33] 
+[2026-08-04 10:25:33] > recipe-assistant-bot@1.0.0 start
+[2026-08-04 10:25:33] > node --enable-source-maps dist/index.mjs
+[2026-08-04 10:25:33] 
+[2026-08-04 10:25:34] {"level":30,"time":1785828334263,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","port":8080,"msg":"Server listening"}
+[2026-08-04 10:25:34] {"level":50,"time":1785828334269,"pid":19,"hostname":"recipe-assistent-bot-kiktevevg2-00001-deployment-54c4bbf67p6w6m","err":{"type":"Error","message":"getaddrinfo ENOTFOUND helium","stack":"Error: getaddrinfo ENOTFOUND helium\n    at <anonymous> (/usr/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async initDatabase (/usr/src/app/src/bot/db-init.ts:4:3)","errno":-3008,"code":"ENOTFOUND","syscall":"getaddrinfo","hostname":"helium"},"msg":"Failed to start Telegram bot"}

@@ -1,4 +1,4 @@
-import { db, chatLogTable } from "@workspace/db";
+import { db, chatLogTable, isDbAvailable } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import type { Message } from "./openai.js";
 
@@ -86,6 +86,7 @@ export function addToHistory(chatId: number, role: "user" | "assistant", content
 
 export async function clearHistory(chatId: number): Promise<void> {
   conversations.delete(chatId);
+  if (!isDbAvailable) return;
   try {
     await db.delete(chatLogTable).where(eq(chatLogTable.chatId, BigInt(chatId)));
   } catch (err) {
@@ -99,6 +100,7 @@ export async function clearHistory(chatId: number): Promise<void> {
  */
 async function hydrateFromDb(chatId: number): Promise<void> {
   if (conversations.has(chatId)) return;
+  if (!isDbAvailable) return;
 
   try {
     const rows = await db
