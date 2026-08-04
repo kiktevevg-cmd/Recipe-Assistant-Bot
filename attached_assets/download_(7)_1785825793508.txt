@@ -1,0 +1,36 @@
+[09:42:06] [1/3] STEP 1/11: FROM docker.io/library/node:24-slim AS dependencies
+[09:42:06] Trying to pull docker.io/library/node:24-slim...
+[09:42:06] Getting image source signatures
+[09:42:07] Copying blob sha256:028b8515a7930e84557efc73be974ba27467e592a63ecf9672263cd154d2537f
+[09:42:07] Copying blob sha256:597c6c618d36213af657a6a8444a5d87801f9a219682b206ad21ccb8f3e57bbd
+[09:42:07] Copying blob sha256:a190f1f6de1ca7a2c21776b295323f662ab9e69ba3d1c4ade2c80ec7a586a9e7
+[09:42:07] Copying blob sha256:70874da0b41533f3e64c2451ffdb9bd92ce337ed9eab485bc6b06f1cfe7477e4
+[09:42:07] Copying blob sha256:a0643d3c9bce67f526b4c6cc86ee2b7156b216ee00cf1094d60ed09c16237c9a
+[09:42:09] Copying config sha256:7036a19424e7febc3056d2d6c1d70445e85dfa5614a47026620124d4a20c97d3
+[09:42:09] Writing manifest to image destination
+[09:42:09] [1/3] STEP 2/11: WORKDIR /app
+[09:42:10] [1/3] STEP 3/11: RUN groupadd -g 10025 kiktevevg2 && useradd -u 10025 -g kiktevevg2 -m -d /home/kiktevevg2 kiktevevg2
+[09:42:10] [1/3] STEP 4/11: COPY --chown=kiktevevg2:kiktevevg2 package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+[09:42:10] [1/3] STEP 5/11: RUN chown -R kiktevevg2:kiktevevg2 .
+[09:42:10] [1/3] STEP 6/11: USER kiktevevg2
+[09:42:11] [1/3] STEP 7/11: ENV HOME=/home/kiktevevg2
+[09:42:11] [1/3] STEP 8/11: ENV NPM_CONFIG_PREFIX=/home/kiktevevg2/.local
+[09:42:11] [1/3] STEP 9/11: ENV PATH="/home/kiktevevg2/.local/bin:${PATH}"
+[09:42:11] [1/3] STEP 10/11: RUN if [ -f package-lock.json ]; then       npm ci --no-audit --no-fund;     elif [ -f yarn.lock ]; then       npm i -g yarn && yarn install --frozen-lockfile --production=false;     elif [ -f pnpm-lock.yaml ]; then       npm i -g pnpm && pnpm config set dangerouslyAllowAllBuilds true && pnpm install --frozen-lockfile;     else       echo "No lockfile found." && exit 1;     fi
+
+[09:42:13] added 1 package in 2s
+
+[09:42:13] 1 package is looking for funding
+[09:42:14]   run `npm fund` for details
+[09:42:14] npm notice
+[09:42:14] npm notice New major version of npm available! 11.17.0 -> 12.0.2
+[09:42:15] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+[09:42:15] npm notice To update run: npm install -g npm@12.0.2
+[09:42:15] npm notice
+[09:42:15] ? Verifying lockfile against supply-chain policies (475 entries)...
+[09:42:18] ✓ Lockfile passes supply-chain policies (475 entries in 3.6s)
+[09:42:18] [ERR_PNPM_LOCKFILE_CONFIG_MISMATCH] Cannot proceed with the frozen installation. The current "catalogs" configuration doesn't match the value found in the lockfile
+
+[09:42:19] Update your lockfile using "pnpm install --no-frozen-lockfile"
+[09:42:19] Error: building at STEP "RUN if [ -f package-lock.json ]; then       npm ci --no-audit --no-fund;     elif [ -f yarn.lock ]; then       npm i -g yarn && yarn install --frozen-lockfile --production=false;     elif [ -f pnpm-lock.yaml ]; then       npm i -g pnpm && pnpm config set dangerouslyAllowAllBuilds true && pnpm install --frozen-lockfile;     else       echo "No lockfile found." && exit 1;     fi": while running runtime: exit status 1
+[09:42:19] Произошла внутренняя ошибка. Процесс прерван. Смотрите логи приложения.
