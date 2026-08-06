@@ -58,15 +58,19 @@ export async function startBot(): Promise<void> {
     { command: "clear",     description: "Очистить историю разговора" },
   ]);
 
-  // Start polling — return a promise that rejects on startup failure
-  return new Promise<void>((resolve, reject) => {
-    bot
-      .start({
-        onStart: (botInfo) => {
-          logger.info({ username: botInfo.username }, "Telegram bot started");
-          resolve();
-        },
-      })
-      .catch(reject);
+  // Switch to webhook mode — delete any existing webhook, then register the new one
+  await bot.api.deleteWebhook();
+
+  const domain = process.env["RAILWAY_PUBLIC_DOMAIN"];
+  if (!domain) {
+    throw new Error("RAILWAY_PUBLIC_DOMAIN environment variable is required.");
+  }
+
+  const webhookUrl = `https://${domain}/api/webhook`;
+
+  await bot.api.setWebhook(webhookUrl, {
+    allowed_updates: ["message", "callback_query"],
   });
+
+  logger.info({ webhookUrl }, "Telegram bot webhook set");
 }
